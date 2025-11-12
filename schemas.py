@@ -13,36 +13,64 @@ Model name is converted to lowercase for the collection name:
 
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import date
 
-# Example schemas (replace with your own):
+# Example domain for UMKM (small business) prediction app
 
+class Profile(BaseModel):
+    """
+    Business profile schema
+    Collection name: "profile"
+    """
+    owner_name: str = Field(..., description="Owner full name")
+    business_name: str = Field(..., description="Business name")
+    email: Optional[str] = Field(None, description="Contact email")
+    phone: Optional[str] = Field(None, description="Contact phone")
+    address: Optional[str] = Field(None, description="Business address")
+    industry: Optional[str] = Field(None, description="Business industry type")
+
+class Metric(BaseModel):
+    """
+    Daily/Monthly metrics captured for dashboard monitoring
+    Collection name: "metric"
+    """
+    period: date = Field(..., description="Date representing the period (e.g., first day of month)")
+    sales: float = Field(..., ge=0, description="Sales revenue for period")
+    orders: int = Field(..., ge=0, description="Total orders")
+    marketing_spend: float = Field(..., ge=0, description="Marketing spend")
+
+class Prediction(BaseModel):
+    """
+    Prediction inputs and outputs
+    Collection name: "prediction"
+    """
+    period: date = Field(..., description="Target period for prediction")
+    sales: float = Field(..., ge=0, description="Recent sales reference")
+    orders: int = Field(..., ge=0, description="Recent orders reference")
+    marketing_spend: float = Field(..., ge=0, description="Planned marketing budget")
+    predicted_sales: Optional[float] = Field(None, ge=0, description="Predicted sales output")
+    predicted_orders: Optional[int] = Field(None, ge=0, description="Predicted orders output")
+
+class Report(BaseModel):
+    """
+    Monitoring report entries
+    Collection name: "report"
+    """
+    title: str = Field(..., description="Report title")
+    notes: Optional[str] = Field(None, description="Observation notes")
+    status: str = Field("open", description="Status of the item: open, in_progress, done")
+
+# Keep example schemas for reference (not used by the app directly)
 class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    name: str
+    email: str
+    address: str
+    age: Optional[int] = None
+    is_active: bool = True
 
 class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+    title: str
+    description: Optional[str] = None
+    price: float
+    category: str
+    in_stock: bool = True
